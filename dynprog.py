@@ -48,6 +48,7 @@ class DroneExtinguisher:
         self.backtrace_memory = dict()
     
     @staticmethod
+    # first everything except dynamic programming, lowest cost, and backtrace solution
     def compute_euclidean_distance(point1: typing.Tuple[float, float], point2: typing.Tuple[float, float]) -> float:
         """
         A static method (as it does not have access to the self. object) that computes the Euclidean
@@ -59,9 +60,10 @@ class DroneExtinguisher:
         Returns 
           float: the Euclidean distance between the two points
         """
-        
-        # TODO
-        raise NotImplementedError()
+
+        # calculate the distance between the two points
+        distance = math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+        return distance
 
 
     def fill_travel_costs_in_liters(self):
@@ -74,8 +76,21 @@ class DroneExtinguisher:
         The function does not return anything.  
         """
         
-        # TODO
-        raise NotImplementedError()
+        # print("forest location: ", self.forest_location)
+        # print("bag locations: ", self.bag_locations)
+        
+        # calculate the distance between the forest and the bag locations
+        for bag_location in self.bag_locations:
+            distance = self.compute_euclidean_distance(self.forest_location, bag_location)
+            # calculate the cost of traveling from the forest to the bag and back to the forest
+            cost = 2 * self.liter_cost_per_km * distance
+            # round up the cost to the nearest integer
+            cost = np.ceil(cost)
+            # add the cost to the travel costs in liters
+            self.travel_costs_in_liters.append(cost)
+        
+        # print("travel costs in liters: ", self.travel_costs_in_liters)
+
 
 
     def compute_sequence_idle_time_in_liters(self, i, j):
@@ -95,8 +110,10 @@ class DroneExtinguisher:
           int: the amount of time (measured in liters) that we are idle on the day   
         """
         
-        # TODO
-        raise NotImplementedError()
+        # compute the total idle time
+        idle_time_in_liters = self.liter_budget_per_day - sum(self.bags[i:j+1]) - self.travel_costs_in_liters[j]
+        print("idle time in liters: ", idle_time_in_liters)
+        return idle_time_in_liters
 
     def compute_idle_cost(self, i, j, idle_time_in_liters):
         """
@@ -117,8 +134,15 @@ class DroneExtinguisher:
           - integer: the cost of being idle on a day corresponding to idle_time_in_liters
         """
         
-        # TODO
-        raise NotImplementedError()
+        # transform the idle time into a quantity that we want to directly optimize
+        if idle_time_in_liters < 0:
+            return np.inf
+        elif j == self.num_bags - 1:
+            return 0
+        else:
+            print("idle time in liters squared: ", idle_time_in_liters**2)
+            return idle_time_in_liters**2
+        
     
     def compute_sequence_usage_cost(self, i: int, j: int, k: int) -> float:
         """
@@ -138,7 +162,7 @@ class DroneExtinguisher:
         # TODO
         raise NotImplementedError()
 
-
+    # deze als laatste
     def dynamic_programming(self):
         """
         The function that uses dynamic programming to solve the problem: compute the optimal way of emptying bags in the forest
