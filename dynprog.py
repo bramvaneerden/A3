@@ -110,10 +110,23 @@ class DroneExtinguisher:
           int: the amount of time (measured in liters) that we are idle on the day   
         """
         
+        # compute the total time in a day
+        total_time_in_a_day = self.liter_budget_per_day
+
+        # compute the total time spent on traveling to/from the bags
+        total_time_spent_on_traveling = 0
+        for k in range(i, j+1):
+            total_time_spent_on_traveling += self.travel_costs_in_liters[k]
+
+        # compute the total time spent on emptying the bags
+        total_time_spent_on_emptying = 0
+        for k in range(i, j+1):
+            total_time_spent_on_emptying += self.bags[k]
+
         # compute the total idle time
-        idle_time_in_liters = self.liter_budget_per_day - sum(self.bags[i:j+1]) - self.travel_costs_in_liters[j]
-        print("idle time in liters: ", idle_time_in_liters)
-        return idle_time_in_liters
+        total_idle_time = total_time_in_a_day - total_time_spent_on_traveling - total_time_spent_on_emptying
+
+        return total_idle_time
 
     def compute_idle_cost(self, i, j, idle_time_in_liters):
         """
@@ -140,8 +153,8 @@ class DroneExtinguisher:
         elif j == self.num_bags - 1:
             return 0
         else:
-            print("idle time in liters squared: ", idle_time_in_liters**2)
-            return idle_time_in_liters**2
+            # print("idle time in liters squared: ", idle_time_in_liters**2)
+            return idle_time_in_liters**3
         
     
     def compute_sequence_usage_cost(self, i: int, j: int, k: int) -> float:
@@ -159,8 +172,14 @@ class DroneExtinguisher:
           - float: the cost of usign drone k for bags[i:j+1] 
         """
         
-        # TODO
-        raise NotImplementedError()
+        #compute usage cost for using drone k for all bags
+        usage_cost = 0
+        for bag in range(i, j+1):
+            usage_cost += self.usage_cost[bag][k]
+            # print("usage cost: ", usage_cost)
+        
+        return usage_cost
+    
 
     # deze als laatste
     def dynamic_programming(self):
