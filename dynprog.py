@@ -171,12 +171,11 @@ class DroneExtinguisher:
         Returns
           - float: the cost of usign drone k for bags[i:j+1] 
         """
-        
+
         #compute usage cost for using drone k for all bags
         usage_cost = 0
         for bag in range(i, j+1):
             usage_cost += self.usage_cost[bag][k]
-            # print("usage cost: ", usage_cost)
         
         return usage_cost
     
@@ -189,9 +188,49 @@ class DroneExtinguisher:
         In this function, we fill the memory structures self.idle_cost and self.optimal_cost making use of functions defined above. 
         This function does not return anything. 
         """
+        num_days = 0
+        # Step 1: Fill in travel costs in liters
+        self.fill_travel_costs_in_liters()
+
+        # Step 2: Initialize the base case
+        self.optimal_cost[0, 0] = 0
+
+        # Step 3: Fill in the matrices using dynamic programming
+        for i in range(1, self.num_bags + 1):
+            
+            for k in range(self.num_drones):
+                min_cost = np.inf
+                min_cost_drone = -1
+
+                for j in range(i):
+                    idle_time_in_liters = self.compute_sequence_idle_time_in_liters(j, i - 1)
+                    idle_cost = self.compute_idle_cost(j, i - 1, idle_time_in_liters)
+                    usage_cost = self.compute_sequence_usage_cost(j, i - 1, k)
+
+                    # Check if the current drone can be used within the daily budget
+                    if usage_cost <= self.liter_budget_per_day:
+                        total_cost = self.optimal_cost[j, k] + usage_cost + idle_cost
+
+                        if total_cost < min_cost:
+                            min_cost = total_cost
+                            min_cost_drone = j
+
+                if min_cost_drone != -1:
+
+                    # Exclude idle cost if there is only one day
+                    if i == self.num_bags:
+                        self.optimal_cost[i, k] = min_cost - idle_cost
+                    else:
+                        self.optimal_cost[i, k] = min_cost
+
+                    # Store the idle cost for the range (min_cost_drone, i-1)
+                    idle_time_in_liters = self.compute_sequence_idle_time_in_liters(min_cost_drone, i - 1)
+                    self.idle_cost[min_cost_drone, i - 1] = self.compute_idle_cost(min_cost_drone, i - 1, idle_time_in_liters)
+
+                    
         
-        # TODO
-        raise NotImplementedError()
+        
+            
 
     def lowest_cost(self) -> float:
         """
@@ -203,8 +242,7 @@ class DroneExtinguisher:
           - float: the lowest cost
         """
         
-        # TODO
-        raise NotImplementedError()
+        return np.min(self.optimal_cost[self.num_bags])
 
 
     def backtrace_solution(self) -> typing.List[int]:

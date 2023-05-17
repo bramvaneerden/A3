@@ -1,0 +1,31 @@
+As we have the optimal cost for all water bags [0:i], optimal_cost(i), we need to minimize the cost for i+1. 
+The cost of the next bags consists of the amount of liters in the bags (liters_bag) and the travel cost (travel_cost). To compute Optimal)_cost(i+1) based on Optimal_cost(j) for j< i+1 we use:
+
+	Optimal_cost(i+1) = min(Optimal_cost(j) + liters_bag(i+1) + travel_cost(i+1))
+
+The endpoint of the recursive definition is Optimal_cost(n-1), where n is the total number of water bags.
+This represents the optimal cost for transporting all the water bags using a single drone.
+
+
+The recurrent equation for Optimal_cost(i, k) can be defined as follows:
+
+Base Case:
+When i is 0, we have only one water bag (w0). In this case, the optimal cost is the usage cost of the drone dk for transporting the first water bag:
+	Optimal_cost(0, k) = liters_bag(0) + travel_cost(0,k))
+
+Recursive Case:
+For i > 0, we consider two possibilities for the optimal cost:
+
+a) Using the current drone k to transport water bag i:
+In this case, the optimal cost will be the minimum cost among the following:
+	Optimal_cost(i, k) = min(Optimal_cost(j, k-1) + liters_bag(i) + travel_cost(i,k)), for j < i
+
+We consider all the previous optimal costs up to index j, using drones up to index k-1, and add the cost of using drone k for waterbag i.
+
+b) Not using the current drone k to transport water bag i:
+In this case, the optimal cost will be the optimal cost obtained by using drones up to index k to transport water bags up to index i (without using drone k for water bag i):
+	Optimal_cost(i, k) = min(Optimal_cost(j, k-1) + liters_bag(i) + travel_cost(i,k-1)), for j < i
+
+The optimal cost will be the minimum value between the possibilities a and b.
+
+The endpoint of the recursive definition is Optimal_cost(n-1, k-1), where n is the total number of water bags and k is the total number of drones.
