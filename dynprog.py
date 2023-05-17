@@ -188,7 +188,6 @@ class DroneExtinguisher:
         In this function, we fill the memory structures self.idle_cost and self.optimal_cost making use of functions defined above. 
         This function does not return anything. 
         """
-        num_days = 0
         # Step 1: Fill in travel costs in liters
         self.fill_travel_costs_in_liters()
 
